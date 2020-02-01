@@ -9,7 +9,7 @@ description
 
 1. Install [Python3](https://www.python.org/downloads/).
 
-2. Clone the repository by running ```git clone https://github.com/JamesPerisher/file-encrypter.git``` or Download the .zip folder and extract it.
+2. Clone the repository by running ```git clone link``` or Download the .zip folder and extract it.
 
 3. Step 3
 
