@@ -1,7 +1,16 @@
 from exceptions import *
 
-class interpreter:
-    def argParser(self, content):
+class Interpreter:
+    @staticmethod
+    def isValid(typee, content):
+        try:
+            typee(content)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def argParser(content):
         content = content + " "
         double = False
         single = False
@@ -33,7 +42,7 @@ class interpreter:
 
 
 
-class arg:
+class Arg:
     def __init__(self, expected, desc, optional, multi=False):
         self.expected = expected
         self.desc     = desc
@@ -41,46 +50,50 @@ class arg:
         self.multi = multi
 
     def __repr__(self):
-        return "arg(expected='%s', desc='%s', optional='%s', multi='%s')"%(self.expected, self.desc, self.optional, self.multi)
+        return "arg_%s%s%s"%(self.expected, "_" if self.optional else "*", "+" if self.multi else "-")
 
-    def isValid(self, typee, content):
-        try:
-            typee(content)
-            return True
-        except ValueError:
-            return False
 
     def check(self, data):
-        return self.isValid(self.expected, data)
+        return Interpreter.isValid(self.expected, data)
 
 
 
-class command:
-    def __init__(self, name):
+class Command(list):
+    def __init__(self, name, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.name = name if type(name) == type(list()) else [name]
-        self.args = []
 
     def __repr__(self):
-        return "command(%s)"%self.args
+        return "command%s(%s)"%(self.name,super().__repr__())
 
-    def append(self, expected=str, description="Argument description.", optinal=False):
-        self.args.append(arg(expected, description, optinal))
+    def __setitem__(self, index, value):
+        if not isinstance(value, Arg) : raise InvalidCommandArg("Command can only contain arguments.")
+        super().__setitem__(index, value)
+
+    def append(self, value):
+        if not isinstance(value, Arg) : raise InvalidCommandArg("Command can only contain arguments.")
+        super().append(value)
+
+    def add_arg(self, expected=str, description="Argument description.", optional=False):
+        self.append(Arg(expected, description, optional))
 
     def check(self, args):
         return (args[0] in self.name)
 
     def execute(self, args, *aargs, **kwargs):
         args = args[1::]
+        if len([0 for x in self if not x.optional]) > len(args) : raise NotEnoughArguments("Too many argument for '%s'."%self)
+
         i = 0
         for j in args:
-            if len(self.args) <= i : raise TooManyArguments("Too many argument for '%s'."%self)
-            if not self.args[i].check(j):
-                if self.args[i].multi:
+            if len(self) <= i : raise TooManyArguments("Too many argument for '%s'."%self)
+            if not self[i].check(j):
+                if self[i].multi:
                     i += 1
                     continue
                 raise InvalidArgument("The value '%s' does not match '%s'."%(j, self))
 
-            if self.args[i].multi : continue
+            if self[i].multi : continue
             i += 1
 
         return self.event(args, *aargs, **kwargs)
@@ -94,16 +107,29 @@ class command:
         return True
 
 
+class CommandConsole(list):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+    def __repr__(self):
+        return "\n".join(["console("] + [str(x) for x in self] + [")"])
 
+    def __setitem__(self, index, value):
+        if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
+        super().__setitem__(index, value)
 
-i = interpreter()
-x = i.argParser("hello 'world hehe ee'")
-print(x)
+    def append(self, value):
+        if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
+        super().append(value)
 
-
-c = command("hello")
-c.append()
-print(c)
-
-print(c.execute(x))
+    def execute(self, line, *args, **kwargs):
+        ag = Interpreter.argParser(line)
+        exceptions = []
+        for i in self:
+            if i.check(ag):
+                try:
+                    return i.execute(ag, *args, **kwargs)
+                except Exception as e:
+                    exceptions.append(e)
+        if not len(exceptions) == 0 : raise MultipleExceptions(exceptions)
+        return None
