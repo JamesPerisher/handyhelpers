@@ -1,6 +1,6 @@
 from threading import Thread
-from dispatcher import Dispatcher
-from packet import Packet
+from .dispatcher import Dispatcher
+from .packet import Packet
 
 import socket
 import time
@@ -12,6 +12,7 @@ class ConnectionServer(dict, Thread):
     def __init__(self, host, port, max_connect=MAX_CONNECT):
         Thread.__init__(self)
         dict.__init__(self)
+        self.CONNECTION = Connection
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.host = host
@@ -37,13 +38,22 @@ class ConnectionServer(dict, Thread):
         self.s.bind((self.host, self.port))
         self.s.listen(self.max_connect)
 
+    def connect_event(self, conn):
+        pass
+
     def connect(self, conn, addr):
-        self[addr] = Connection(conn, addr, self)
+        self[addr] = self.CONNECTION(conn, addr, self)
         print(self)
         self[addr].start()
+        self.connect_event(self[addr])
+
+    def disconnect_event(self, addr, reason):
+        pass
+
 
     def disconnect(self, addr, reason):
         self.pop(addr)
+        self.disconnect_event(addr, reason)
 
 
     def run(self):

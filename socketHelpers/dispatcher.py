@@ -1,5 +1,5 @@
 import time
-from packet import Packet
+from .packet import Packet
 
 DELAY_TIMER = 0.125
 TIMEOUT = 10

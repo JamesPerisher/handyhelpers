@@ -1,7 +1,8 @@
 class Packet:
-    def __init__(self, id=0, data=b''):
-        self.id = id
-        self.data = data
+    def __init__(self, id, data):
+
+        self.id   = b'' if (id  ==None) or (id  =="") else (id   if isinstance(id,   bytes) else   id.encode())
+        self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.encode())
 
     def __repr__(self):
         return "<Packet(%s, %s)>"%("\"\"" if (self.id == "") or (self.id == None) else self.id, "\"\"" if (self.data == "") or (self.data == None) else self.data)
@@ -13,7 +14,10 @@ class Packet:
         self.data = self.data + data
 
     def read(self):
-        return self.data
+        return self.data.decode()
+
+    def get_id(self):
+        return self.id.decode()
 
     def unpack(self):
         return b'\x01' + self.id + b'\x02' + self.data + b'\x03\x04'
