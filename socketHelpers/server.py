@@ -1,14 +1,15 @@
 from threading import Thread
 from .dispatcher import Dispatcher
 from .packet import Packet
+from collections import OrderedDict
 
 import socket
 import time
 
 RECEIVE_BUFFER = 4096
-MAX_CONNECT = 1000000000
+MAX_CONNECT = 100
 
-class ConnectionServer(dict, Thread):
+class ConnectionServer(OrderedDict, Thread):
     def __init__(self, host, port, max_connect=MAX_CONNECT):
         Thread.__init__(self)
         dict.__init__(self)
@@ -28,7 +29,6 @@ class ConnectionServer(dict, Thread):
     def __setitem__(self, key, item):
         if isinstance(item, Connection) : return super().__setitem__(key, item)
         raise TypeError("Connection server can only contain active connctions.")
-
 
     def update(self, *args, **kwargs):
         if isinstance(item, Connection) : return super().update(key, item)
@@ -54,6 +54,10 @@ class ConnectionServer(dict, Thread):
     def disconnect(self, addr, reason):
         self.pop(addr)
         self.disconnect_event(addr, reason)
+
+    def distribute_packet(self, packet):
+        for i in self:
+            self[i].send(packet)
 
 
     def run(self):

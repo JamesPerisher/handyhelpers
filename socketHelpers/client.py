@@ -1,6 +1,6 @@
 from threading import Thread
-from dispatcher import Dispatcher
-from packet import Packet
+from .dispatcher import Dispatcher
+from .packet import Packet
 
 import socket
 import time

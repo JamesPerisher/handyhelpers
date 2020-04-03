@@ -3,6 +3,7 @@ from exceptions import *
 class Interpreter:
     @staticmethod
     def isValid(typee, content):
+        if isinstance(content, type(None)): return True
         try:
             typee(content)
             return True
@@ -39,6 +40,12 @@ class Interpreter:
             raise SyntaxError("Unclosed arguments")
 
         return out
+
+
+    @staticmethod
+    def convert(typee, content):
+        if isinstance(content, type(None)): return None
+        return typee(content)
 
 
 
@@ -82,21 +89,29 @@ class Command(list):
 
     def execute(self, args, *aargs, **kwargs):
         args = args[1::]
-        if len([0 for x in self if not x.optional]) > len(args) : raise NotEnoughArguments("Too many argument for '%s'."%self)
 
+        required = len(args)
+        if len([0 for x in self if not x.optional]) > required : raise NotEnoughArguments("Too many argument for '%s'."%self)
+
+        args = args + [None]*(len(self)-required)
+
+        out = []
         i = 0
         for j in args:
             if len(self) <= i : raise TooManyArguments("Too many argument for '%s'."%self)
             if not self[i].check(j):
                 if self[i].multi:
                     i += 1
+                    out.append(self[i].expected(j))
                     continue
                 raise InvalidArgument("The value '%s' does not match '%s'."%(j, self))
+            out.append(Interpreter.convert(self[i].expected, j))
 
             if self[i].multi : continue
             i += 1
 
-        return self.event(args, *aargs, **kwargs)
+
+        return self.event(out, *aargs, **kwargs)
 
     def event(self, command_args, *args, **kwargs):
         # overwrite for command funtionality
@@ -105,6 +120,9 @@ class Command(list):
         #    arguments forwarded form execute as args
         #    keywords forwarded from execute as 'kwargs'
         return True
+
+    def setEvent(self, event):
+        self.event = event
 
 
 class CommandConsole(list):
@@ -117,6 +135,17 @@ class CommandConsole(list):
     def __setitem__(self, index, value):
         if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
         super().__setitem__(index, value)
+
+    def command(self, name, *args):
+        def commandDecorator(func):
+            new_command = Command(name)
+            for i in args:
+                new_command.append(i)
+            new_command.setEvent(func)
+            self.append(new_command)
+            return func
+        return commandDecorator
+
 
     def append(self, value):
         if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
@@ -133,3 +162,9 @@ class CommandConsole(list):
                     exceptions.append(e)
         if not len(exceptions) == 0 : raise MultipleExceptions(exceptions)
         return None
+
+    def handleExecute(self, *args, **kwargs):
+        try:
+            return self.execute(*args, **kwargs)
+        except MultipleExceptions as e:
+            return e
