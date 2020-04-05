@@ -1,6 +1,6 @@
 class Packet:
+    START_SEQ = b'\x01\x00\x00\x02\x00\x00'
     def __init__(self, id, data):
-
         self.id   = b'' if (id  ==None) or (id  =="") else (id   if isinstance(id,   bytes) else   id.encode())
         self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.encode())
 
@@ -16,28 +16,17 @@ class Packet:
     def read(self):
         return self.data.decode()
 
+    def read_raw(self):
+        return self.data
+
     def get_id(self):
         return self.id.decode()
 
+    def encode(self, data):
+        return data
+
     def unpack(self):
-        return b'\x01' + self.id + b'\x02' + self.data + b'\x03\x04'
+        return self.id + b'\x00'*(16-len(self.id)) + self.encode(self.data)
 
     def pack(raw_data):
-        id = b''
-        isid = False
-        data = b''
-        isdata = False
-
-        for i in raw_data:
-            i = bytes([i])
-            if i == b'\x01' : isid   = True ;                continue
-            if i == b'\x02' : isid   = False; isdata = True; continue
-            if i == b'\x03' : isdata = False;                continue
-            if i == b'\x04' :                                break
-
-            if isdata : data += i; raw_data = raw_data[1::]; continue
-            if isid   : id   += i; raw_data = raw_data[1::]; continue
-
-        if id == b'' and data == b'': return None, raw_data
-
-        return Packet(id=id, data=data), raw_data[4::]
+        return Packet(id=raw_data[0:16].replace(b'\x00', b''), data=raw_data[16::])

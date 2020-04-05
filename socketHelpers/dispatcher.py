@@ -21,11 +21,8 @@ class Dispatcher:
 
 
     def recv_raw(self, data):
-        self.buffer += data
-
-        packet, self.buffer = Packet.pack(self.buffer)
-
-        if packet != None : self.handle(packet)
+        packet = Packet.pack(data)
+        if packet : self.handle(packet)
 
 
     def handle(self, packet):
