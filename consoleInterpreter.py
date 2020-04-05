@@ -50,7 +50,7 @@ class Interpreter:
 
 
 class Arg:
-    def __init__(self, expected, desc, optional, multi=False):
+    def __init__(self, expected, desc, optional=False, multi=False):
         self.expected = expected
         self.desc     = desc
         self.optional = optional
@@ -74,11 +74,11 @@ class Command(list):
         return "command%s(%s)"%(self.name,super().__repr__())
 
     def __setitem__(self, index, value):
-        if not isinstance(value, Arg) : raise InvalidCommandArg("Command can only contain arguments.")
+        if not isinstance(value, Arg) : raise InvalidCommandArgError("Command can only contain arguments.")
         super().__setitem__(index, value)
 
     def append(self, value):
-        if not isinstance(value, Arg) : raise InvalidCommandArg("Command can only contain arguments.")
+        if not isinstance(value, Arg) : raise InvalidCommandArgError("Command can only contain arguments.")
         super().append(value)
 
     def add_arg(self, expected=str, description="Argument description.", optional=False):
@@ -91,20 +91,20 @@ class Command(list):
         args = args[1::]
 
         required = len(args)
-        if len([0 for x in self if not x.optional]) > required : raise NotEnoughArguments("Too many argument for '%s'."%self)
+        if len([0 for x in self if not x.optional]) > required : raise NotEnoughArgumentsError("Too many argument for '%s'."%self)
 
         args = args + [None]*(len(self)-required)
 
         out = []
         i = 0
         for j in args:
-            if len(self) <= i : raise TooManyArguments("Too many argument for '%s'."%self)
+            if len(self) <= i : raise TooManyArgumentsError("Too many argument for '%s'."%self)
             if not self[i].check(j):
                 if self[i].multi:
                     i += 1
                     out.append(self[i].expected(j))
                     continue
-                raise InvalidArgument("The value '%s' does not match '%s'."%(j, self))
+                raise InvalidArgumentError("The value '%s' does not match '%s'."%(j, self))
             out.append(Interpreter.convert(self[i].expected, j))
 
             if self[i].multi : continue
@@ -133,7 +133,7 @@ class CommandConsole(list):
         return "\n".join(["console("] + [str(x) for x in self] + [")"])
 
     def __setitem__(self, index, value):
-        if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
+        if not isinstance(value, Command) : raise InvalidCommandArgError("Command can only contain arguments.")
         super().__setitem__(index, value)
 
     def command(self, name, *args):
@@ -148,7 +148,7 @@ class CommandConsole(list):
 
 
     def append(self, value):
-        if not isinstance(value, Command) : raise InvalidCommandArg("Command can only contain arguments.")
+        if not isinstance(value, Command) : raise InvalidCommandArgError("Command can only contain arguments.")
         super().append(value)
 
     def execute(self, line, *args, **kwargs):
@@ -160,11 +160,11 @@ class CommandConsole(list):
                     return i.execute(ag, *args, **kwargs)
                 except Exception as e:
                     exceptions.append(e)
-        if not len(exceptions) == 0 : raise MultipleExceptions(exceptions)
-        return None
+        if not len(exceptions) == 0 : raise MultipleExceptionsError(exceptions)
+        raise MultipleExceptionsError([NoCommandError("No matching command for '%s'"%line)])
 
     def handleExecute(self, *args, **kwargs):
         try:
             return self.execute(*args, **kwargs)
-        except MultipleExceptions as e:
+        except MultipleExceptionsError as e:
             return e

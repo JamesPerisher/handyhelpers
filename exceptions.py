@@ -6,24 +6,27 @@ class CommandError(BaseError):
     """Base class for command exceptions"""
     pass
 
-class InvalidArgument(CommandError):
+class InvalidArgumentError(CommandError):
     """Raised when an argument is invalid"""
     pass
 
 
-class TooManyArguments(CommandError):
+class TooManyArgumentsError(CommandError):
     """Raised when too many arguments passed"""
     pass
 
-class NotEnoughArguments(CommandError):
+class NotEnoughArgumentsError(CommandError):
     """Raised when not enough arguments passed"""
     pass
 
-class InvalidCommandArg(CommandError):
+class InvalidCommandArgError(CommandError):
     """Raised when appending invalid argument to a command."""
     pass
 
+class NoCommandError(CommandError):
+    """Raised when appending invalid argument to a command."""
+    pass
 
-class MultipleExceptions(BaseError):
+class MultipleExceptionsError(BaseError):
     """Raised to raise multiple exceptions at onece."""
     pass
