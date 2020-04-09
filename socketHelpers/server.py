@@ -21,9 +21,14 @@ class Connection(Thread, Dispatcher):
     def close(self):
         self.s.close()
 
+    def kill_event(self):
+        pass
+
     def kill(self):
+        self.kill_event()
         self.running = False
         self.close()
+        return "Killed connection"
 
     def run(self):
         self.running = True
@@ -59,6 +64,9 @@ class ConnectionServer(OrderedDict, Thread):
         if isinstance(item, Connection) : return super().__setitem__(key, item)
         raise TypeError("Connection server can only contain active connctions.")
 
+    def key(key, addr):
+        return "%s:%s"%addr
+
     def update(self, *args, **kwargs):
         if isinstance(item, Connection) : return super().update(key, item)
         raise TypeError("Connection server can only contain active connctions.")
@@ -71,17 +79,17 @@ class ConnectionServer(OrderedDict, Thread):
         pass
 
     def connect(self, conn, addr):
-        self[addr[0]] = self.CONNECTION(conn, addr, self)
+        self[self.key(addr)] = self.CONNECTION(conn, addr, self)
         print(self)
-        self[addr[0]].start()
-        self.connect_event(self[addr[0]])
+        self[self.key(addr)].start()
+        self.connect_event(self[self.key(addr)])
 
     def disconnect_event(self, addr, reason):
         pass
 
 
     def disconnect(self, addr, reason):
-        self.pop(addr[0])
+        self.pop(self.key(addr))
         self.disconnect_event(addr, reason)
 
     def distribute_packet(self, packet):

@@ -23,15 +23,13 @@ class Client(Thread, Dispatcher):
     def connect(self):
         self.s.connect((self.host, self.port))
 
-    def ping(self):
-        self.send(Packet(b'ping', b'0000'))
-
     def close(self):
         self.s.close()
 
     def kill(self):
         self.running = False
         self.close()
+        return "Killed connection"
 
     def run(self):
         self.connect()

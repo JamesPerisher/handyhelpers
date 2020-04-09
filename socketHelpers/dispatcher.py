@@ -17,7 +17,7 @@ class Dispatcher:
         timeout = time.time() + self.timeout
         while (not self.running) and (time.time() < timeout):
             time.sleep(DELAY_TIMER)
-        f()
+        return f()
 
 
     def recv_raw(self, data):
@@ -29,7 +29,8 @@ class Dispatcher:
         print(packet)
 
     def _send(self, data):
-        self.recipient.send(data)
+        if not self.running : return 1
+        return self.recipient.send(data)
 
     def send(self, packet):
         return self.schedule(lambda: self._send(packet.unpack()))

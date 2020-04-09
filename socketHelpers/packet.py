@@ -1,6 +1,6 @@
 class Packet:
     START_SEQ = b'\x01\x00\x00\x02\x00\x00'
-    def __init__(self, id, data):
+    def __init__(self, id, data=None):
         self.id   = b'' if (id  ==None) or (id  =="") else (id   if isinstance(id,   bytes) else   id.encode())
         self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.encode())
 
