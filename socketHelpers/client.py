@@ -1,4 +1,4 @@
-from threading import Thread
+from customThreading import KillableThread
 from .dispatcher import Dispatcher
 from .packet import Packet
 
@@ -8,17 +8,15 @@ import time
 RECEIVE_BUFFER = 4096
 
 
-class Client(Thread, Dispatcher):
+class Client(KillableThread, Dispatcher):
     def __init__(self, host, port):
-        Thread.__init__(self)
+        KillableThread.__init__(self)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Dispatcher.__init__(self, self.s)
 
 
         self.host = host
         self.port = port
-
-        self.running = False
 
     def connect(self):
         self.s.connect((self.host, self.port))
@@ -27,15 +25,14 @@ class Client(Thread, Dispatcher):
         self.s.close()
 
     def kill(self):
-        self.running = False
+        super().kill()
         self.close()
         return "Killed connection"
 
     def run(self):
         self.connect()
-        self.running = True
 
-        while self.running:
+        while True:
             try:
                 data = self.s.recv(RECEIVE_BUFFER)
             except Exception as e:

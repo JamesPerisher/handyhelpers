@@ -1,4 +1,4 @@
-from threading import Thread
+from customThreading import KillableThread
 from .dispatcher import Dispatcher
 from .packet import Packet
 from collections import OrderedDict
@@ -10,9 +10,9 @@ RECEIVE_BUFFER = 4096
 MAX_CONNECT = 1000000000
 
 
-class Connection(Thread, Dispatcher):
+class Connection(KillableThread, Dispatcher):
     def __init__(self, s, addr, lister=None):
-        Thread.__init__(self)
+        KillableThread.__init__(self)
         Dispatcher.__init__(self, s)
         self.s = s
         self.addr = addr
@@ -26,14 +26,13 @@ class Connection(Thread, Dispatcher):
 
     def kill(self):
         self.kill_event()
-        self.running = False
+        super().kill()
         self.close()
         return "Killed connection"
 
     def run(self):
-        self.running = True
         try:
-            while self.running:
+            while True:
                 self.recv_raw(self.s.recv(RECEIVE_BUFFER))
             self.s.close()
         except Exception as e:
@@ -43,10 +42,10 @@ class Connection(Thread, Dispatcher):
             self.kill()
 
 
-class ConnectionServer(OrderedDict, Thread):
+class ConnectionServer(OrderedDict, KillableThread):
     CONNECTION = Connection
     def __init__(self, host, port, max_connect=MAX_CONNECT):
-        Thread.__init__(self)
+        KillableThread.__init__(self)
         dict.__init__(self)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
