@@ -1,56 +1,71 @@
 import json
-from vertualfile import VertualFile
+import vertualfile
 
 
-
-class config:
-    def __init__(self, file=":memory:", autoadd=True, create_file=True):
+class Config(dict):
+    def __init__(self, file, raw_data="", autoadd=True, create_file=True, readonly=False):
         self.file = file
+        self.raw_data = raw_data
         self.autoadd = autoadd
         self.create_file = create_file
+        self.readonly = readonly
 
+        self = super().__init__() if self.raw_data.strip() == "" else super().__init__(json.loads(self.raw_data))
+
+    @staticmethod
+    def from_file(file, autoadd=True, create_file=True, readonly=False):
+        raw_data = ""
         try:
-            with self.open(self, self.file, "r") as f:
-                self.raw = f.read()
+            with open(file, "r") as f:
+                raw_data = f.read()
         except FileNotFoundError as e:
-            if self.create_file:
-                self.open(self, self.file, "w").close()
+            if create_file:
+                open(file, "w").close()
             else:
                 raise e
 
-            self.raw = ""
+        return Config(file, raw_data, autoadd, create_file, readonly)
 
-        if self.raw.strip() == "":
-            self.data = {}
-        else:
-            self.data = json.loads(self.raw)
+    @staticmethod
+    def from_memory(autoadd=True, create_file=True, readonly=False):
+        return Config(vertualfile.VertualFile(doclose=False), "", autoadd, create_file, readonly)
+
 
     def __repr__(self):
-        return self.file
+        self.save()
+        return "%s.config(%s, '%s', %s, %s, %s)" %(__name__, "'%s'"%self.file if not isinstance(self.file, vertualfile.VertualFile) else self.file, self.raw_data, self.autoadd, self.create_file, self.readonly)
 
-    def open(self, file, *args, **kwargs):
-        if str(file) == ":memory:":
-            return VertualFile(*args[1::], **kwargs)
-        return open(str(file), *args[1::], **kwargs)
+    def __getitem__(self, key, *args, **kwargs):
+        return self.get(key)
 
-    def update(self, key, value):
-        self.data[key] = value
+    def __setitem__(self, *args, **kwargs):
+        super().__setitem__(*args, **kwargs)
+        self.save()
+
+    def __delitem__(self, *args, **kwargs):
+        super().__delitem__(*args, **kwargs)
+        self.save()
+
+    def update(self, key,*args, **kwargs):
+        self.get(key)
+        super().update(key,*args, **kwargs)
         self.save()
 
     def get(self, key, default=None):
-        data = self.data.get(key, None)
+        data = super().get(key, None)
         if data == None:
             if self.autoadd:
-                self.data[key] = default
+                self[key] = default
                 self.save()
             return default
         return data
 
 
     def save(self):
-        self.raw = json.dumps(self.data)
-        with self.open(self, self.file, "w") as f:
-            f.write(self.raw)
+        if self.readonly : return
+        self.raw_data = json.dumps(self)
+        with vertualfile.open(self.file, "w") as f:
+            f.write(self.raw_data)
 
     def close(self):
         self.file.close()

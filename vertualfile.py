@@ -5,6 +5,9 @@ class VertualFile():
         self.closed = False
         self.doclose = doclose
 
+    def __repr__(self):
+        return "%s.VertualFile('%s', %s)"%(__name__, "".join(self.method), self.doclose)
+
     def __enter__(self, *args, **kwargs):
         return self
 
@@ -35,3 +38,8 @@ class VertualFile():
     @check
     def write(self, data):
         self.data = self.data + data
+
+
+def open(file, *args, **kwargs):
+    if isinstance(file, VertualFile) : return file
+    return __builtins__["open"](file, *args, **kwargs)
