@@ -24,11 +24,12 @@ class Connection(KillableThread, Dispatcher):
     def kill_event(self):
         pass
 
-    def kill(self):
+    def kill(self, dc):
+        if self.lister: self.lister.disconnect(self.addr, dc)
         self.kill_event()
-        super().kill()
         self.close()
-        return "Killed connection"
+        super().kill()
+        return "Killed connection (%s)."%dc
 
     def run(self):
         try:
@@ -37,12 +38,10 @@ class Connection(KillableThread, Dispatcher):
             self.s.close()
         except Exception as e:
             dc = "client disconnected: %s %s" %(type(e), e)
-            if self.lister != None : self.lister.disconnect(self.addr, dc); print(dc)
-
-            self.kill()
+            self.kill(dc)
 
 
-class ConnectionServer(OrderedDict, KillableThread):
+class ConnectionServer(KillableThread, OrderedDict):
     CONNECTION = Connection
     def __init__(self, host, port, max_connect=MAX_CONNECT):
         KillableThread.__init__(self)
@@ -53,8 +52,11 @@ class ConnectionServer(OrderedDict, KillableThread):
         self.port = port
         self.max_connect = max_connect
 
+    def copy(self):
+        return OrderedDict(self)
+
     def __repr__(self):
-        return "<ConnectionServer(%s)>"%super().__repr__()
+        return "<ConnectionServer(%s)>"%OrderedDict.__repr__(self)
 
     def __hash__(self):
         return super(dict).__hash__()
@@ -88,7 +90,10 @@ class ConnectionServer(OrderedDict, KillableThread):
 
 
     def disconnect(self, addr, reason):
-        self.pop(self.key(addr))
+        try:
+            self.pop(self.key(addr))
+        except KeyError: # disconnected between now and when asked to
+            pass
         self.disconnect_event(addr, reason)
 
     def distribute_packet(self, packet):

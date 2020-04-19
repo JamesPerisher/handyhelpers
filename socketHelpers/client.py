@@ -36,7 +36,7 @@ class Client(KillableThread, Dispatcher):
             try:
                 data = self.s.recv(RECEIVE_BUFFER)
             except Exception as e:
-                self.kill()
                 print("lost connection to server.")
+                self.kill()
                 break
             self.recv_raw(data)
