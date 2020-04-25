@@ -1,8 +1,7 @@
 class Packet(object):
-    START_SEQ = b'\x01\x00\x00\x02\x00\x00'
     def __init__(self, id, data=None):
-        self.id   = b'' if (id  ==None) or (id  =="") else (id   if isinstance(id,   bytes) else   id.encode())
-        self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.encode())
+        self.id   = b'' if (id  ==None) or (id  =="") else (id   if isinstance(id,   bytes) else   id.strip().encode())
+        self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.strip().encode())
 
     def __repr__(self):
         return "<Packet(%s, %s)>"%("\"\"" if (self.id == "") or (self.id == None) else self.id, "\"\"" if (self.data == "") or (self.data == None) else self.data)

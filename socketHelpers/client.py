@@ -22,7 +22,7 @@ class Client(KillableThread, Dispatcher):
         try:
             self.s.connect((self.host, self.port))
         except ConnectionRefusedError:
-            self.kill()
+            self.kill("Connection refused")
 
     def close(self):
         self.s.close()
