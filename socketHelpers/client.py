@@ -19,15 +19,18 @@ class Client(KillableThread, Dispatcher):
         self.port = port
 
     def connect(self):
-        self.s.connect((self.host, self.port))
+        try:
+            self.s.connect((self.host, self.port))
+        except ConnectionRefusedError:
+            self.kill()
 
     def close(self):
         self.s.close()
 
-    def kill(self):
+    def kill(self, reason):
         super().kill()
         self.close()
-        return "Killed connection"
+        return reason
 
     def run(self):
         self.connect()
@@ -36,7 +39,6 @@ class Client(KillableThread, Dispatcher):
             try:
                 data = self.s.recv(RECEIVE_BUFFER)
             except Exception as e:
-                print("lost connection to server.")
-                self.kill()
+                self.kill("lost connection to server.")
                 break
             self.recv_raw(data)

@@ -5,8 +5,8 @@ DELAY_TIMER = 0.125
 TIMEOUT = 10
 
 
-class Dispatcher:
-    kill = lambda self: "Dispatcher killed."
+class Dispatcher(object):
+    kill = lambda self,msg: "Dispatcher killed via: %s"%msg
 
     def __init__(self, recipient, timeout=TIMEOUT):
         self.recipient = recipient
@@ -28,6 +28,6 @@ class Dispatcher:
     def send(self, packet):
         try:
             return self._send(packet.unpack())
-        except (ConnectionAbortedError, ConnectionResetError):
-            print("lost connection to server.")
-            self.kill()
+        except (ConnectionAbortedError, ConnectionResetError, ConnectionRefusedError, OSError):
+            self.kill("No connection to server.")
+            return False
