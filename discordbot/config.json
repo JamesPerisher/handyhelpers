@@ -1,0 +1,12 @@
+{
+  "bot_prefix": "?",
+  "description": "Custom description",
+  "owner_id": 391109829755797514,
+  "colour": {
+    "success": "0x495384",
+    "error": "0x843331",
+    "help": "0x33664F"
+  },
+  "devs": [391109829755797514, 391109829755797514],
+  "asshelp": [391109829755797514]
+}
