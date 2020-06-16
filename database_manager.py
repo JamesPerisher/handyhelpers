@@ -1,16 +1,18 @@
-from threading import Thread
+from customthreading import KillableThread
 import sqlite3
 import time
 
+
+DELAY = 0.25
 
 class EmptyPlacerholder():
     def __init__(self):
         pass
 
 
-class DatabaseManager(Thread):
+class DatabaseManager(KillableThread):
 
-    def __init__(self, file=":memory:", timeout=10, *arg):
+    def __init__(self, file=":memory:", timeout=10):
         super().__init__()
         self.file = file
         self.timeout = timeout # timeout in seconds
@@ -22,8 +24,8 @@ class DatabaseManager(Thread):
         self.doing = True
 
     def kill(self):
-        print("killed thread: %s"%str(self))
         self.working = False
+        super().kill()
 
     def execute(self, command, timeout=-99999):
         timeout = self.timeout if timeout == -99999 else timeout
@@ -39,6 +41,8 @@ class DatabaseManager(Thread):
             if time.time() > n: # it took too long
                 raise TimeoutError("Timed out while waiting for serialised database interaction.")
 
+            time.sleep(DELAY)
+
         temp_out = self.outvalues[temp_key]
         self.outvalues.pop(temp_key) # clear value from dict
 
@@ -48,11 +52,11 @@ class DatabaseManager(Thread):
         self.execute(":x:x:commit:x:x:")
 
     def run(self): # auto colled on Thread start
-        print("Started thread: %s"%str(self))
+        # print("Started thread: %s"%str(self))
         self.conn = sqlite3.connect(self.file)
         self.crsr = self.conn.cursor()
 
-        while self.working:
+        while self.working: # TODO: fix loop ineffeciencyies
             if len(self.command_stack) == 0:
                 self.doing = False
             for i in self.command_stack:
@@ -60,15 +64,15 @@ class DatabaseManager(Thread):
                     current = self.command_stack.pop(0)
                     if current[1] == ":x:x:commit:x:x:":
                         self.outvalues[current[0]] = self.conn.commit()
-                        print("Commit to db")
+                        # print("Commit to db")
                         continue
 
-                    print("{0: <12} {1} {2}".format("Running: ", current[0], current[1].replace("            ", " ").replace("\n", "\n       ")))
+                    # print("{0: <12} {1} {2}".format("Running: ", current[0], current[1].replace("            ", " ").replace("\n", "\n       ")))
 
                     ee = None
 
                     try:
-                        print("SQL Command: %s" %current[1])
+                        # print("SQL Command: %s" %current[1])
                         self.crsr.execute(current[1])
                     except Exception as e:
                         # print("before e.args")
@@ -86,5 +90,5 @@ class DatabaseManager(Thread):
                     self.outvalues[current[0]] = e
                     raise e
 
-
-        print("Killed:",  str(self))
+            time.sleep(DELAY)
+        # print("Killed:",  str(self))
