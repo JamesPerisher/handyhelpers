@@ -2,22 +2,23 @@
 <html>
 
   <head>
-    {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <title>{% block title %}{% endblock %} - Page name</title>
 
-    <!-- Nav here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
-    {% endblock %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    {% block head %}{% endblock %}
   </head>
 
   <body>
+    {% include "nav.html" %}
+
     <div class="content">{% block content %}{% endblock %}</div>
+
+    {% include "footer.html" %}
   </body>
-
-
-  <footer>
-    <!-- footer here -->
-  </footer>
 
 </html>
