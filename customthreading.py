@@ -5,9 +5,15 @@ class KillableThread(threading.Thread):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def __enter__(self):
+        return self.start()
+
+    def __exit__(self):
+        self.end()
+        return self
+
     def end(self):
         pass
-
 
     def get_id(self):
         # returns id of the respective thread
@@ -24,4 +30,4 @@ class KillableThread(threading.Thread):
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             raise Exception('Exception raise failure')
-        return self.end()
+        return self.__exit__()
