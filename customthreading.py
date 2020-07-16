@@ -6,13 +6,14 @@ class KillableThread(threading.Thread):
         super().__init__(*args, **kwargs)
 
     def __enter__(self):
-        return self.start()
-
-    def __exit__(self):
-        self.end()
+        self.start()
         return self
 
-    def end(self):
+    def __exit__(self, type=None, value=None, traceback=None):
+        self.end(type, value, traceback)
+        return self
+
+    def end(self, type, value, traceback):
         pass
 
     def get_id(self):

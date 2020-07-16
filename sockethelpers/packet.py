@@ -21,7 +21,8 @@ class Packet(object):
     def get_id(self):
         return self.id.decode()
 
-    def encode(self, data):
+    @staticmethod
+    def encode(data):
         return data
 
     def unpack(self):

@@ -40,7 +40,7 @@ class Input:
         return self.raw()
 
 
-class console:
+class Console:
     LOG =      Style.NORMAL + Back.BLACK + Fore.WHITE
     INFO =     Style.NORMAL + Back.BLACK + Fore.CYAN
     WARN =     Style.NORMAL + Back.BLACK + Fore.YELLOW
@@ -90,4 +90,4 @@ class console:
     def success(*args, end="\n"):
         console.custom(console.SUCCESS,  console.level(args, "success"), console.join(" ", args), end=end)
 
-console.input = Input(console)
+Console.input = Input(Console)

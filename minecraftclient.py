@@ -11,7 +11,7 @@ from threading import Timer
 
 
 
-class minecraft_client():
+class Minecraft():
     def __init__(self, username, password=None, server=None, versions=("1.12.2","1.12.2"), auto_connect=False):
         self.username = username
         self.password = password

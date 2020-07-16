@@ -1,5 +1,4 @@
 import json
-import vertualfile
 
 
 class Config(dict):

@@ -1,4 +1,4 @@
-from customthreading import KillableThread
+from .customthreading import KillableThread
 import sqlite3
 import time
 
