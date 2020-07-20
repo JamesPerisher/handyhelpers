@@ -1,5 +1,7 @@
 import threading
 import ctypes
+import time
+
 
 class KillableThread(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -32,3 +34,27 @@ class KillableThread(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             raise Exception('Exception raise failure')
         return self.__exit__()
+
+
+class TimeLoopedThread(KillableThread):
+    def __init__(self, time=10, target=None, args=()):
+        super().__init__()
+        self.time = time
+        self.target = target
+        self.args = args
+
+    def run(self, n):
+        if self.target: self.target(n, *self.args)
+         # override this function when class is inherited
+
+    def _run(self):
+        n = 0
+        while True:
+            self.runloop(n)
+            n += 1
+            time.sleep(self.time)
+
+    def start(self):
+        self.runloop = self.run
+        self.run = self._run
+        super().start()
