@@ -1,4 +1,10 @@
+def open(file, *args, **kwargs):
+    if isinstance(file, VertualFile) : return file
+    return __builtins__["open"](file, *args, **kwargs)
+
+
 class VertualFile():
+    open = open
     def __init__(self, method="t", doclose=True):
         self.method = list(method)
         self.data = b'' if "b" in self.method else ""
@@ -38,8 +44,3 @@ class VertualFile():
     @check
     def write(self, data):
         self.data = self.data + data
-
-
-def open(file, *args, **kwargs):
-    if isinstance(file, VertualFile) : return file
-    return __builtins__["open"](file, *args, **kwargs)

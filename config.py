@@ -1,5 +1,5 @@
 import json
-
+from .virtualfile import VertualFile
 
 class Config(dict):
     def __init__(self, file, raw_data="", autoadd=True, create_file=True, readonly=False):
@@ -63,7 +63,7 @@ class Config(dict):
     def save(self):
         if self.readonly : return
         self.raw_data = json.dumps(self)
-        with vertualfile.open(self.file, "w") as f:
+        with VertualFile.open(self.file, "w") as f:
             f.write(self.raw_data)
 
     def close(self):
