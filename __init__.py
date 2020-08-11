@@ -6,4 +6,5 @@ from .databasemanager import DatabaseManager
 from .keyevents import Combination, Listener
 from .virtualfile import VertualFile
 from .keys import AsymetricKey
+from .loadingbar import LoadingBar
 # from .minecraftclient import Minecraft
