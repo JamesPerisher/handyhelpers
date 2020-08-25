@@ -6,6 +6,13 @@ from Crypto.Cipher import PKCS1_OAEP
 import socket
 
 
+
+import socks
+class ProxySocket(socks.socksocket):
+    pass
+
+
+
 class RSASocket(socket.socket):
     def __init__(self, *args, block_size=AES.block_size, key_size=32, **kwargs):
         super().__init__(*args, **kwargs)
@@ -83,3 +90,10 @@ class RSASocket(socket.socket):
     @validate
     def recv(self, *args, **kwargs):
         return self.decrypt(super().recv(*args, **kwargs))
+
+
+
+class RSAProxySocket(ProxySocket, RSASocket):
+    def __init__(self, *args, block_size=AES.block_size, key_size=32, **kwargs):
+        RSASocket.__init__(self, *args, block_size=AES.block_size, key_size=32, **kwargs)
+        ProxySocket.__init__(self)
