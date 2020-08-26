@@ -92,15 +92,3 @@ class TimeoutThread(KillableThread):
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(self.thread_id, 0)
             raise ThreadExitFailure('Failed to raise exception in thread %s can not kill execution.'%self.thread_id)
-
-
-
-
-
-with limmitedthread(1).start() as a:
-    print(a)
-    while True:
-        print("a")
-        time.sleep(0.1)
-
-print("exited fine")
