@@ -32,7 +32,7 @@ class Config(dict):
 
     def __repr__(self):
         self.save()
-        return "%s.config(%s, '%s', %s, %s, %s)" %(__name__, "'%s'"%self.file if not isinstance(self.file, vertualfile.VertualFile) else self.file, self.raw_data, self.autoadd, self.create_file, self.readonly)
+        return "%s.config(%s, '%s', %s, %s, %s)" %(__name__, "'%s'"%self.file if not isinstance(self.file, VertualFile) else self.file, self.raw_data, self.autoadd, self.create_file, self.readonly)
 
     def __getitem__(self, key, *args, **kwargs):
         return self.get(key)
