@@ -37,12 +37,33 @@ class Map2D(object): # stores a 2D array of objects in an optimized 1D array
 class DirectionTile(object):
     def __init__(self, x=None, y=None):
         self.N = None
+        self.NE = None
         self.E = None
+        self.SE = None
         self.S = None
+        self.SW = None
         self.W = None
+        self.NW = None
+
 
         self.x = x
         self.y = y
+
+    def _iterable(self):
+        yield self.N
+        yield self.NE
+        yield self.E
+        yield self.SE
+        yield self.S
+        yield self.SW
+        yield self.W
+        yield self.NW
+    
+    def __iter__(self):
+        for i in self._iterable():
+            if i != None:
+                yield i
+
 
     def __repr__(self):
         return "{}(x={}, y={})".format(self.__class__.__name__, self.x, self.y)
@@ -62,5 +83,14 @@ class DirectionMap2D(Map2D): # stores a 2d array of DirectionTile decenndent obj
         if y-1 >= 0:
             current.N = self[x, y-1]
             self[x, y-1].S = current
+
+        if x-1 >= 0 and y-1 >= 0:
+            current.NW = current.N.W
+            current.N.W.SE = current
+        
+        if x+1 < self.width and y-1 >= 0:
+            current.NE = current.N.E
+            current.N.E.SW = current
+
 
         return current
