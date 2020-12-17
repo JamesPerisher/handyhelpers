@@ -1,6 +1,3 @@
-
-
-
 class Map2D(object): # stores a 2D array of objects in an optimized 1D array
     def __init__(self, data):
         try:
@@ -68,7 +65,7 @@ class Map2D(object): # stores a 2D array of objects in an optimized 1D array
 
 
 class DirectionTile(object):
-    def __init__(self, x=None, y=None):
+    def __init__(self, x, y, value):
         self.N = None
         self.NE = None
         self.E = None
@@ -78,9 +75,12 @@ class DirectionTile(object):
         self.W = None
         self.NW = None
 
-
         self.x = x
         self.y = y
+        self.v = self.value = value
+
+    def __repr__(self):
+        return "<DT({})>".format(self.value)
 
     def _iterable(self):
         yield self.N
@@ -97,18 +97,19 @@ class DirectionTile(object):
             if i != None:
                 yield i
 
-
-    def __repr__(self):
-        return "{}(x={}, y={})".format(self.__class__.__name__, self.x, self.y)
+    @staticmethod
+    def wrap(obj, x, y): # wrapes tiles for directions
+        return DirectionTile(x, y, obj)
 
 
 class DirectionMap2D(Map2D): # stores a 2d array of DirectionTile decenndent objects
-    def __init__(self, width, height, directiontileclass=DirectionTile):
-        self.directiontileclass = directiontileclass
-        super().__init__(width, height, self._maketile)
+    def __init__(self, data):
+        super().__init__(data)
+        for (x, y), obj in self:
+            self[x,y] = self._maketile(obj, x, y)
 
-    def _maketile(self, x, y): # makes and assigns diretions to tiles
-        current = self.directiontileclass(x, y)
+    def _maketile(self, obj, x, y): # makes and assigns diretions to tiles
+        current = DirectionTile.wrap(obj, x, y)
         if x-1 >= 0:
             current.W = self[x-1, y]
             self[x-1, y].E = current
@@ -124,6 +125,5 @@ class DirectionMap2D(Map2D): # stores a 2d array of DirectionTile decenndent obj
         if x+1 < self.width and y-1 >= 0:
             current.NE = current.N.E
             current.N.E.SW = current
-
-
+            
         return current
