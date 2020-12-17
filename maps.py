@@ -2,16 +2,46 @@
 
 
 class Map2D(object): # stores a 2D array of objects in an optimized 1D array
-    def __init__(self, width, height, defaultfactory=lambda x,y: None):
-        self.width = width
-        self.height = height
-        self.items = [None] * (self.width * self.height)
+    def __init__(self, data):
+        try:
+            self.width = len(data[0])
+            self.height = len(data)
+        except:
+            raise ValueError("Invalid literal for {}: '{}' ".format(self.__class__.__name__, data))
 
-        for i,j in self: # fills the aray with an initialiser
-            self[i] = defaultfactory(*i)
+        self.items = list()
+        for i in data:
+            if len(i) != self.width: raise ValueError("Invalid literal for {} with dimesions {} by {}: '{}' ".format(self.__class__.__name__, self.width, "None", data))
+            self.items += i
+
+
+        if len(self) % self.width != 0: raise ValueError("Invalid literal for {} with dimesions {} by {}: '{}' ".format(self.__class__.__name__, self.width, self.height, data))
+
+
+    @classmethod
+    def from_empty(cls, width, height, defaultfactory=lambda x,y: None):
+        return cls([[defaultfactory(x, y) for x in range(width)] for y in range(height)])
+
+    @classmethod
+    def from_1D_array(cls, data, width):
+        return cls(Map2D.dimensional_data(data, width))
+
+    @staticmethod
+    def dimensional_data(data, width):
+        if len(data) % width != 0: raise ValueError("Invalid literal for dimensional data of width {}: '{}' ".format(width, data))
+        out = []
+        for i in range(len(data)//width):
+            out.append(data[i*width:i*width+width])
+        return out
+
+    @staticmethod
+    def stringify(data):
+        return "\n[\n    {}\n]".format(",\n    ".join(str(x) for x in Map2D.dimensional_data(data, data.width)))
 
     def __repr__(self):
-        return "{}(width={}, height={})".format(self.__class__.__name__, self.width, self.height)
+        return "{}(width={}, height={}, data={})".format(self.__class__.__name__, self.width, self.height,
+        Map2D.stringify(self)
+        )
 
     def __iter__(self):
         for i,j in enumerate(self.items):
@@ -32,6 +62,9 @@ class Map2D(object): # stores a 2D array of objects in an optimized 1D array
 
     def __setitem__(self, key:int, value):
         self.items[self.getkey(key)] = value
+
+    def __len__(self):
+        return len(self.items)
 
 
 class DirectionTile(object):
