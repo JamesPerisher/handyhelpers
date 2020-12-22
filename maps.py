@@ -45,8 +45,12 @@ class Map2D(object): # stores a 2D array of objects in an optimized 1D array
             yield (i%self.width, i//self.width), j
 
     def getkey(self, key): # convert 2D key or 1D key into 1D key
+        if isinstance(key, slice):
+            return slice(self.getkey(key.start), self.getkey(key.stop), key.step)
         try:
             x, y = key
+            if x < 0 : x = self.width  + x
+            if y < 0 : y = self.height + y
             return y*self.width + x
         except (TypeError, ValueError):
             return key
