@@ -1,10 +1,8 @@
-from customthreading import KillableThread
-from .securesocket import RSASocket
-from .dispatcher import Dispatcher
-from .packet import Packet
+from handyhelpers import KillableThread
+from handyhelpers.sockethelpers.securesocket import RSASocket
+from handyhelpers.sockethelpers.dispatcher import Dispatcher
 
 import socket
-import time
 
 RECEIVE_BUFFER = 4096
 

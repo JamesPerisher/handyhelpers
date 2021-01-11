@@ -5,12 +5,9 @@ from Crypto.Cipher import PKCS1_OAEP
 
 import socket
 
-
-
 import socks
 class ProxySocket(socks.socksocket):
     pass
-
 
 
 class RSASocket(socket.socket):

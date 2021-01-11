@@ -1,11 +1,9 @@
-from customthreading import KillableThread
-from .securesocket import RSASocket
+from handyhelpers import KillableThread
+from handyhelpers.sockethelpers.securesocket import RSASocket
 from collections import OrderedDict
-from .dispatcher import Dispatcher
-from .packet import Packet
+from handyhelpers.sockethelpers.dispatcher import Dispatcher
 
 import socket
-import time
 
 RECEIVE_BUFFER = 4096
 MAX_CONNECT = 1000000000

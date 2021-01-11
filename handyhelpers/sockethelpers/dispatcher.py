@@ -1,5 +1,4 @@
-import time
-from .packet import Packet
+from handyhelpers.sockethelpers.packet import Packet
 
 DELAY_TIMER = 0.125
 TIMEOUT = 10

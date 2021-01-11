@@ -1,5 +1,5 @@
 import json
-from .virtualfile import VertualFile
+from handyhelpers import virtualfilesystem
 
 class Config(dict):
     def __init__(self, file, raw_data="", autoadd=True, create_file=True, readonly=False):
@@ -27,12 +27,12 @@ class Config(dict):
 
     @staticmethod
     def from_memory(autoadd=True, create_file=True, readonly=False):
-        return Config(vertualfile.VertualFile(doclose=False), "", autoadd, create_file, readonly)
+        return Config(virtualfilesystem.VirtualFile(__name__, doclose=False), "", autoadd, create_file, readonly)
 
 
     def __repr__(self):
         self.save()
-        return "%s.config(%s, '%s', %s, %s, %s)" %(__name__, "'%s'"%self.file if not isinstance(self.file, VertualFile) else self.file, self.raw_data, self.autoadd, self.create_file, self.readonly)
+        return "%s.config(%s, '%s', %s, %s, %s)" %(__name__, "'%s'"%self.file if not isinstance(self.file, virtualfilesystem.VirtualFile) else self.file, self.raw_data, self.autoadd, self.create_file, self.readonly)
 
     def __getitem__(self, key, *args, **kwargs):
         return self.get(key)
@@ -63,7 +63,12 @@ class Config(dict):
     def save(self):
         if self.readonly : return
         self.raw_data = json.dumps(self)
-        with VertualFile.open(self.file, "w") as f:
+        if isinstance(self.file, virtualfilesystem.VirtualFile):
+            with self.file as f:
+                f.truncate()
+                f.write(self.raw_data)
+                return
+        with open(self.file, "w") as f:
             f.write(self.raw_data)
 
     def close(self):
