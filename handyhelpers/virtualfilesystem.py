@@ -13,10 +13,11 @@ class VirtualObject(object):
         return ["{}.{}".format(self.__class__.__name__, self.name)]
 
 class VirtualDir(VirtualObject):
-    def __init__(self, name, autoadd=False):
+    def __init__(self, name, autoadd=False, doclose=True):
         super().__init__(name)
         self.data = OrderedDict()
         self.autoadd = autoadd
+        self.doclose = doclose
         self.append(self)
     def _add(self):
         self.autoadd = self.parent.autoadd
@@ -53,7 +54,7 @@ class VirtualDir(VirtualObject):
             except KeyError as e:
                 if self.autoadd:
                     if len(walk) == 0 and file:
-                        _current = VirtualFile(itemname)
+                        _current = VirtualFile(itemname, doclose=self.doclose)
                     else:
                         _current = VirtualDir(itemname, True)
                     current.append(_current)
@@ -66,16 +67,17 @@ class VirtualDir(VirtualObject):
         _obj = self._open(filepath, True)
         if isinstance(_obj, VirtualFile):
             return _obj
-        raise ValueError("Value for '{}' is not of type '{}'.".format(filepath, VirtualFile.__class__.__name__))
+        raise ValueError("Value for '{}' is not of type '{}'.".format(filepath, "VirtualFile"))
 
     def open(self, filepath):
         return self._open(filepath, False)
     
     def opendir(self, filepath):
-        _obj = self._open(filepath, True)
+        _obj = self._open(filepath, False)
+        print(_obj)
         if isinstance(_obj, VirtualDir):
             return _obj
-        raise ValueError("Value for '{}' is not of type '{}'.".format(filepath, VirtualDir.__class__.__name__))
+        raise ValueError("Value for '{}' is not of type '{}'.".format(filepath, "VirtualDir"))
 
     def render(self):
         out = []
@@ -87,8 +89,8 @@ class VirtualDir(VirtualObject):
 
 
 class VirtualDrive(VirtualDir):
-    def __init__(self, drivename="V:", autoadd=False):
-        super().__init__(drivename, autoadd)
+    def __init__(self, drivename="V:", autoadd=False, doclose=True):
+        super().__init__(drivename, autoadd, doclose)
 
 
 class VirtualFile(VirtualObject):
