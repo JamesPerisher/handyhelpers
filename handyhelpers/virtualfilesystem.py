@@ -1,4 +1,6 @@
 from collections import OrderedDict
+import json
+import base64
 
 
 class VirtualObject(object):
@@ -12,6 +14,29 @@ class VirtualObject(object):
         # return [str(self.name)]
         return ["{}.{}".format(self.__class__.__name__, self.name)]
 
+    def _fromsave(self, rawdata):
+        out = OrderedDict()
+        out[self.name] = self
+        for i in rawdata:
+            name = i
+            datatype = rawdata[name]["type"]
+            data = rawdata[name]["data"]
+
+            virtualobject = {"dir":VirtualDir, "file":VirtualFile, "drive":VirtualDrive}[datatype](name, autoadd=True, doclose=False)
+            virtualobject.data = virtualobject._fromsave(data)
+
+            out[name] = virtualobject
+        return out
+
+    @classmethod
+    def fromsave(cls, rawdata):
+        data = json.loads(base64.b64decode(rawdata.encode()).decode())
+        tmp = lambda x:x
+        tmp.name = "tmp"
+        return list(cls._fromsave(tmp, data).items())[1][1]
+        
+
+
 class VirtualDir(VirtualObject):
     def __init__(self, name, autoadd=False, doclose=True):
         super().__init__(name)
@@ -19,6 +44,7 @@ class VirtualDir(VirtualObject):
         self.autoadd = autoadd
         self.doclose = doclose
         self.append(self)
+        self.typename = "dir"
     def _add(self):
         self.autoadd = self.parent.autoadd
 
@@ -87,14 +113,27 @@ class VirtualDir(VirtualObject):
 
         return out
 
+    def _save(self):
+        out = {}
+        for i in self:
+            out[i.name] = i._save()
+        return {
+            "type":self.typename,
+            "data":out
+        }
+    
+    def save(self):
+        return base64.b64encode(json.dumps({self.name:self._save()}).encode()).decode()
+
 
 class VirtualDrive(VirtualDir):
     def __init__(self, drivename="V:", autoadd=False, doclose=True):
         super().__init__(drivename, autoadd, doclose)
+        self.typename = "drive"
 
 
 class VirtualFile(VirtualObject):
-    def __init__(self, name, method="t", doclose=True):
+    def __init__(self, name, method="t", doclose=True, autoadd=None):
         super().__init__(name)
         self.method = list(method)
         self.data = b'' if "b" in self.method else ""
@@ -134,3 +173,15 @@ class VirtualFile(VirtualObject):
     @check
     def write(self, data):
         self.data = self.data + data
+    
+    def _save(self):
+        return {
+            "type":"file",
+            "data":self.data
+            }
+    
+    def save(self):
+        return base64.b64encode(json.dumps({self.name:self._save()}).encode()).decode()
+
+    def _fromsave(self, rawdata):
+        return rawdata
