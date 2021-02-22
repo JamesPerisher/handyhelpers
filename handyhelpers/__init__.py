@@ -25,6 +25,8 @@ from handyhelpers.keys import AsymetricKey
 
 from handyhelpers.loadingbar import LoadingBar
 
+from handyhelpers.escapecontext import Context
+
 from handyhelpers.maps import Map2D
 from handyhelpers.maps import DirectionTile
 from handyhelpers.maps import DirectionMap2D
@@ -39,5 +41,9 @@ from handyhelpers.sockethelpers import Packet
 # from .minecraftclient import Minecraft  # mincraft client seems to have some issues
 
 
-__all__ = ["Config", "sockethelpers", "Input", "Console", "Interpreter", "Arg", "Command", "CommandConsole", "VirtualObject", "VirtualFile", "VirtualDir", "VirtualDrive", "KillableThread", "TimeLoopedThread",
-           "DatabaseManager", "Client", "Connection", "ConnectionServer", "Packet", "LoadingBar", "Combination", "Listener", "AsymetricKey", "Map2D", "DirectionTile", "DirectionMap2D"]
+__all__ = [ 
+    "Config", "sockethelpers", "Input", "Console", "Interpreter", "Arg", "Command", "CommandConsole", "VirtualObject",
+    "VirtualFile", "VirtualDir", "VirtualDrive", "KillableThread", "TimeLoopedThread", "DatabaseManager", "Client",
+    "Connection", "ConnectionServer", "Packet", "LoadingBar", "Combination", "Listener", "AsymetricKey", "Map2D",
+    "DirectionTile", "DirectionMap2D", "Context"
+    ]
